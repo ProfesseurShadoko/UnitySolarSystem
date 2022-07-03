@@ -34,6 +34,8 @@ public class CelestialObject : MonoBehaviour
         if (positionFixed) {
             rb.constraints=RigidbodyConstraints.FreezePosition;
         }
+
+        GetComponent<Rigidbody>().mass=mass;
     }
 
     // Update is called once per frame
@@ -65,6 +67,15 @@ public class CelestialObject : MonoBehaviour
 
     public override string ToString() {
         return $"<{this.name} (x={transform.position.x},y={transform.position.y},z={transform.position.z}) at speed ({speed.magnitude})>\n";
+    }
+
+    public static CelestialObject findPlanet(string name) {
+        CelestialObject planet;
+        for (int i=0; i<CelestialObject.all().length(); i++) {
+            planet=CelestialObject.all().element(i);
+            if (planet.name.Equals(name)) {return planet;}
+        }
+        return CelestialObject.all().element(0);
     }
 
 

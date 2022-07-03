@@ -5,6 +5,7 @@ using UnityEngine;
 public class shipMouvement : MonoBehaviour
 {
     public GameObject ReactorTrust;
+    public GameObject ReactorTrustSmall;
     public GameObject Nose;
 
     public float forwardTrust;
@@ -41,23 +42,17 @@ public class shipMouvement : MonoBehaviour
         deactivateTrust();
         trustCorrection=new Vector3(0,0,0);
 
+        
         if (Input.GetKey("z")) {
-            ReactorTrust.SetActive(true);
+            trustCorrection=getDirection()*sideTrust*Time.deltaTime/mass;
+        }
+
+        if (Input.GetKey("r")) {
             trustCorrection=getDirection()*forwardTrust*Time.deltaTime/mass;
-            //currentSpeed=new Vector3(1,0,0); //recule
-            //currentSpeed=new Vector3(0,1,0); //monte
-            //currentSpeed=new Vector3(0,0,1); //droite
-            Debug.Log($@"SpaceShip Information :
-                - Current Speed : {currentSpeed.magnitude}km/s
-                - Current Position : {transform.position}
-                - Current Orientation : {transform.localEulerAngles}
-                - Current SpeedVector : {currentSpeed}
-                _____________________________________________________
-                ");
         }
 
         if (Input.GetKey("space")) {
-            Vector3 breakingTrust = currentSpeed.normalized*sideTrust*2*Time.deltaTime/mass;
+            Vector3 breakingTrust = currentSpeed.normalized*forwardTrust*2*Time.deltaTime/mass;
             if (currentSpeed.magnitude <= breakingTrust.magnitude) {
                 currentSpeed=new Vector3(0,0,0);
             }else{
@@ -96,6 +91,7 @@ public class shipMouvement : MonoBehaviour
 
         //update speed
         currentSpeed+=trustCorrection;
+        currentSpeed+=Gravitation.externalForce(this)/this.getMass()*Time.deltaTime*CelestialObject.distanceFactor; //la force n'est pas dans le bon référentiel...
         speed=currentSpeed.magnitude/CelestialObject.distanceFactor;
         //update position
         transform.position+=currentSpeed*Time.deltaTime;
@@ -106,6 +102,13 @@ public class shipMouvement : MonoBehaviour
 
         
 
+    }
+
+    void OnCollisionEnter(Collision other) { //ouuh on a problème là !
+        string planetName = other.collider.name;
+        CelestialObject planet = CelestialObject.findPlanet(planetName);
+        this.currentSpeed = planet.getSpeed()*CelestialObject.distanceFactor;
+        Debug.Log($"! Collision with {planet}");
     }
 
     public Vector3 getDirection() {
@@ -120,6 +123,10 @@ public class shipMouvement : MonoBehaviour
         return (RightReactorTrust.transform.position-LeftReactorTrust.transform.position).normalized;
     }
 
+    public float getMass() {
+        return mass;
+    }
+
     
 
     private void deactivateTrust() {
@@ -130,6 +137,7 @@ public class shipMouvement : MonoBehaviour
         RightReactorTrust.SetActive(false);
         BackReactorTrustRight.SetActive(false);
         BackReactorTrustLeft.SetActive(false);
+        ReactorTrustSmall.SetActive(false);
     }
 
     private void activateTrust(Vector3 trustCorrection) {
@@ -141,7 +149,9 @@ public class shipMouvement : MonoBehaviour
         if (leftOrRight > limit) {RightReactorTrust.SetActive(true);}
         if (upOrDown < -limit) {UpReactorTrust.SetActive(true);}
         if (upOrDown > limit) {DownReactorTrust.SetActive(true);}
-        if (forwardOrBackwards > limit) {ReactorTrust.SetActive(true);}
+        if (forwardOrBackwards > limit) {
+            if (Input.GetKey("r")) {ReactorTrust.SetActive(true);}else{ReactorTrustSmall.SetActive(true);}
+        }
         if (forwardOrBackwards < -limit) {BackReactorTrustLeft.SetActive(true);BackReactorTrustRight.SetActive(true);}
 
     }
