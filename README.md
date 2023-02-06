@@ -1,3 +1,3 @@
 # UnitySolarSystem
 
-Nothing really nteresting here, I simply made a game with Unity, with a small ship that can travel trough the Solar System, and orbit around planets.
+Nothing really interesting here, I simply made a game with Unity, with a small ship that can travel trough the Solar System, and orbit around planets.
